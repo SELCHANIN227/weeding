@@ -1,1 +1,4 @@
-weeding-dmitry-and-diana.ru
+printf "weeding-dmitry-and-diana.ru\n" > CNAME
+git add CNAME
+git commit -m "Add CNAME for GitHub Pages"
+git push origin main
