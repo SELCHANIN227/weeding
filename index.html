@@ -606,64 +606,67 @@
   });
 
   /* ===== ОТПРАВКА В TELEGRAM ===== */
-  const TG_TOKEN='8808143218:AAGm_-NxCX83U-00Hj58BP_-E32XrhnGn4Y';
-  const TG_CHATS=['1350887098','5726867655'];
+const TG_CHATS = ['1350887098', '5726867655'];
+const PROXY_URL = 'https://script.google.com/macros/s/AKfycbxW44zkouLwXcrWficB5-MEO2u91GfkucsQp8q5t0yuv2MgnTxXrbgmI-dRFYJ5m4oLRw/exec';
 
-  document.getElementById('rsvpForm').addEventListener('submit',async function(e){
-    e.preventDefault();
-    const data=new FormData(this);
-    const msg=document.getElementById('formMsg');
-    const btn=this.querySelector('.submit-btn');
+document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const data = new FormData(this);
+  const msg  = document.getElementById('formMsg');
+  const btn  = this.querySelector('.submit-btn');
 
-    const name        = data.get('name');
-    const attend      = data.get('attend');
-    const alcohol     = data.get('alcohol');
-    const alcoholType = data.get('alcohol_type') || '—';
-    const food        = data.get('food');
-    const allergy     = data.get('allergy') || '—';
+  const name        = data.get('name');
+  const attend      = data.get('attend');
+  const alcohol     = data.get('alcohol');
+  const alcoholType = data.get('alcohol_type') || '—';
+  const food        = data.get('food');
+  const allergy     = data.get('allergy') || '—';
 
-    const text=
-      '🤍 Новый ответ на анкету\n\n'+
-      '👤 Имя: '+name+'\n'+
-      '✅ Присутствие: '+attend+'\n'+
-      '🍷 Алкоголь: '+alcohol+(alcohol==='Да'?' ('+alcoholType+')':'')+'\n'+
-      '🍽 Горячее: '+food+'\n'+
-      '⚠️ Аллергии: '+allergy;
+  const text =
+    '🤍 Новый ответ на анкету\n\n' +
+    '👤 Имя: '        + name    + '\n' +
+    '✅ Присутствие: ' + attend  + '\n' +
+    '🍷 Алкоголь: '   + alcohol + (alcohol === 'Да' ? ' (' + alcoholType + ')' : '') + '\n' +
+    '🍽 Горячее: '    + food    + '\n' +
+    '⚠️ Аллергии: '   + allergy;
 
-    btn.disabled=true;
-    msg.style.color='var(--sage-dark)';
-    msg.textContent='Отправляем...';
+  btn.disabled = true;
+  msg.style.color = 'var(--sage-dark)';
+  msg.textContent  = 'Отправляем...';
 
-    try{
-      const results=await Promise.all(
-        TG_CHATS.map(chatId=>
-          fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({chat_id:chatId,text:text})
-          }).then(r=>r.json())
-        )
-      );
+  try {
+    const results = await Promise.all(
+      TG_CHATS.map(chatId =>
+        fetch(PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text:    text
+          })
+        }).then(r => r.json())
+      )
+    );
 
-      const ok=results.some(r=>r.ok);
-      if(ok){
-        msg.style.color='var(--sage-dark)';
-        msg.textContent='Спасибо, '+name+'! Ваш ответ принят 🤍';
-        this.reset();
-        toggleAlc(true);
-      }else{
-        console.log('Telegram ответ:',results);
-        msg.style.color='#d88';
-        msg.textContent='Ошибка отправки. Попробуйте ещё раз или напишите организатору.';
-      }
-    }catch(err){
-      console.log(err);
-      msg.style.color='#d88';
-      msg.textContent='Нет связи. Проверьте интернет и попробуйте снова.';
-    }finally{
-      btn.disabled=false;
+    const ok = results.some(r => r.ok);
+    if (ok) {
+      msg.style.color = 'var(--sage-dark)';
+      msg.textContent = 'Спасибо, ' + name + '! Ваш ответ принят 🤍';
+      this.reset();
+      toggleAlc(true);
+    } else {
+      console.log('Proxy ответ:', results);
+      msg.style.color = '#d88';
+      msg.textContent = 'Ошибка отправки. Попробуйте ещё раз или напишите организатору.';
     }
-  });
+  } catch (err) {
+    console.log(err);
+    msg.style.color = '#d88';
+    msg.textContent = 'Нет связи. Проверьте интернет и попробуйте снова.';
+  } finally {
+    btn.disabled = false;
+  }
+});
 
   document.body.style.overflow='hidden';
 </script>
