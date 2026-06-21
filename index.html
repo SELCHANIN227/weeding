@@ -605,17 +605,16 @@
     window.open('https://yandex.ru/maps/-/CPTmrSl6','_blank');
   });
 
-  /* ===== ОТПРАВКА В TELEGRAM ===== */
 /* ===== ОТПРАВКА В TELEGRAM ===== */
 const PROXY_URL = 'https://script.google.com/macros/s/AKfycbxW44zkouLwXcrWficB5-MEO2u91GfkucsQp8q5t0yuv2MgnTxXrbgmI-dRFYJ5m4oLRw/exec';
 
 document.getElementById('rsvpForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  const data = new FormData(this);
-  const msg  = document.getElementById('formMsg');
-  const btn  = this.querySelector('.submit-btn');
-  const form = this;
 
+  const data        = new FormData(this);
+  const form        = this;
+  const msg         = document.getElementById('formMsg');
+  const btn         = this.querySelector('.submit-btn');
   const name        = data.get('name');
   const attend      = data.get('attend');
   const alcohol     = data.get('alcohol');
@@ -625,29 +624,39 @@ document.getElementById('rsvpForm').addEventListener('submit', function(e) {
 
   const text =
     '🤍 Новый ответ на анкету\n\n' +
-    '👤 Имя: '         + name    + '\n' +
-    '✅ Присутствие: '  + attend  + '\n' +
-    '🍷 Алкоголь: '    + alcohol + (alcohol === 'Да' ? ' (' + alcoholType + ')' : '') + '\n' +
-    '🍽 Горячее: '     + food    + '\n' +
-    '⚠️ Аллергии: '    + allergy;
+    '👤 Имя: '        + name    + '\n' +
+    '✅ Присутствие: ' + attend  + '\n' +
+    '🍷 Алкоголь: '   + alcohol + (alcohol === 'Да' ? ' (' + alcoholType + ')' : '') + '\n' +
+    '🍽 Горячее: '    + food    + '\n' +
+    '⚠️ Аллергии: '   + allergy;
 
-  btn.disabled = true;
+  btn.disabled    = true;
   msg.style.color = 'var(--sage-dark)';
-  msg.textContent  = 'Отправляем...';
+  msg.textContent = 'Отправляем...';
 
-  /* Используем <img> трюк чтобы обойти CORS — GET запрос */
-  const encoded = encodeURIComponent(text);
-  const url = PROXY_URL + '?text=' + encoded;
+  const script    = document.createElement('script');
+  const cbName    = 'cb_' + Date.now();
 
-  const img = new Image();
-  img.onload = img.onerror = function() {
+  window[cbName]  = function(response) {
     msg.style.color = 'var(--sage-dark)';
     msg.textContent = 'Спасибо, ' + name + '! Ваш ответ принят 🤍';
     form.reset();
     toggleAlc(true);
     btn.disabled = false;
+    delete window[cbName];
+    script.remove();
   };
-  img.src = url;
+
+  script.onerror = function() {
+    msg.style.color = '#d88';
+    msg.textContent = 'Ошибка. Напишите организатору.';
+    btn.disabled    = false;
+    delete window[cbName];
+    script.remove();
+  };
+
+  script.src = PROXY_URL + '?text=' + encodeURIComponent(text) + '&callback=' + cbName;
+  document.body.appendChild(script);
 });
 
   document.body.style.overflow='hidden';
