@@ -459,8 +459,11 @@
         </div>
       </div>
       <div class="field">
-        <label>Аллергии / ограничения в питании</label>
-        <textarea name="allergy" placeholder="Если есть — укажите. Если нет, оставьте пустым"></textarea>
+        <label>Будете ли присутствовать на второй день торжества?</label>
+        <div class="radio-group">
+          <label><input type="radio" name="day2" value="Да" checked><span>Да</span></label>
+          <label><input type="radio" name="day2" value="Нет"><span>Нет</span></label>
+        </div>
       </div>
       <button type="submit" class="submit-btn">Отправить</button>
       <div class="form-msg" id="formMsg"></div>
@@ -620,7 +623,7 @@ document.getElementById('rsvpForm').addEventListener('submit', function(e) {
   const alcohol     = data.get('alcohol');
   const alcoholType = data.get('alcohol_type') || '—';
   const food        = data.get('food');
-  const allergy     = data.get('allergy') || '—';
+  const day2 = data.get('day2');
 
   const text =
     '🤍 Новый ответ на анкету\n\n' +
@@ -628,7 +631,7 @@ document.getElementById('rsvpForm').addEventListener('submit', function(e) {
     '✅ Присутствие: ' + attend  + '\n' +
     '🍷 Алкоголь: '   + alcohol + (alcohol === 'Да' ? ' (' + alcoholType + ')' : '') + '\n' +
     '🍽 Горячее: '    + food    + '\n' +
-    '⚠️ Аллергии: '   + allergy;
+    '🗓 Второй день: ' + day2;
 
   btn.disabled    = true;
   msg.style.color = 'var(--sage-dark)';
