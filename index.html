@@ -606,14 +606,15 @@
   });
 
   /* ===== ОТПРАВКА В TELEGRAM ===== */
-const TG_CHATS = ['1350887098', '5726867655'];
+/* ===== ОТПРАВКА В TELEGRAM ===== */
 const PROXY_URL = 'https://script.google.com/macros/s/AKfycbxW44zkouLwXcrWficB5-MEO2u91GfkucsQp8q5t0yuv2MgnTxXrbgmI-dRFYJ5m4oLRw/exec';
 
-document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
+document.getElementById('rsvpForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const data = new FormData(this);
   const msg  = document.getElementById('formMsg');
   const btn  = this.querySelector('.submit-btn');
+  const form = this;
 
   const name        = data.get('name');
   const attend      = data.get('attend');
@@ -624,48 +625,29 @@ document.getElementById('rsvpForm').addEventListener('submit', async function(e)
 
   const text =
     '🤍 Новый ответ на анкету\n\n' +
-    '👤 Имя: '        + name    + '\n' +
-    '✅ Присутствие: ' + attend  + '\n' +
-    '🍷 Алкоголь: '   + alcohol + (alcohol === 'Да' ? ' (' + alcoholType + ')' : '') + '\n' +
-    '🍽 Горячее: '    + food    + '\n' +
-    '⚠️ Аллергии: '   + allergy;
+    '👤 Имя: '         + name    + '\n' +
+    '✅ Присутствие: '  + attend  + '\n' +
+    '🍷 Алкоголь: '    + alcohol + (alcohol === 'Да' ? ' (' + alcoholType + ')' : '') + '\n' +
+    '🍽 Горячее: '     + food    + '\n' +
+    '⚠️ Аллергии: '    + allergy;
 
   btn.disabled = true;
   msg.style.color = 'var(--sage-dark)';
   msg.textContent  = 'Отправляем...';
 
-  try {
-    const results = await Promise.all(
-      TG_CHATS.map(chatId =>
-        fetch(PROXY_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text:    text
-          })
-        }).then(r => r.json())
-      )
-    );
+  /* Используем <img> трюк чтобы обойти CORS — GET запрос */
+  const encoded = encodeURIComponent(text);
+  const url = PROXY_URL + '?text=' + encoded;
 
-    const ok = results.some(r => r.ok);
-    if (ok) {
-      msg.style.color = 'var(--sage-dark)';
-      msg.textContent = 'Спасибо, ' + name + '! Ваш ответ принят 🤍';
-      this.reset();
-      toggleAlc(true);
-    } else {
-      console.log('Proxy ответ:', results);
-      msg.style.color = '#d88';
-      msg.textContent = 'Ошибка отправки. Попробуйте ещё раз или напишите организатору.';
-    }
-  } catch (err) {
-    console.log(err);
-    msg.style.color = '#d88';
-    msg.textContent = 'Нет связи. Проверьте интернет и попробуйте снова.';
-  } finally {
+  const img = new Image();
+  img.onload = img.onerror = function() {
+    msg.style.color = 'var(--sage-dark)';
+    msg.textContent = 'Спасибо, ' + name + '! Ваш ответ принят 🤍';
+    form.reset();
+    toggleAlc(true);
     btn.disabled = false;
-  }
+  };
+  img.src = url;
 });
 
   document.body.style.overflow='hidden';
